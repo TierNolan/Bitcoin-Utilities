@@ -1,1 +1,6 @@
 .project
+.classpath
+.settings/
+pom.xml
+target/
+bin/
