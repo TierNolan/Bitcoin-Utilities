@@ -58,16 +58,13 @@ public class Hash implements MessageType {
 		} else {
 			final Hash other = (Hash) o;
 			if (other.data.length != data.length) {
-				System.out.println("Length diff");
 				return false;
 			}
 			if (hashCode() != other.hashCode()) {
-				System.out.println("hashcode diff " + Hex.toHexString(data) + " " + Hex.toHexString(other.data));
 				return false;
 			}
 			for (int i = 0; i < data.length; i++) {
 				if (other.data[i] != data[i]) {
-					System.out.println("Data diff " + i);
 					return false;
 				}
 			}
@@ -78,6 +75,11 @@ public class Hash implements MessageType {
 	@Override
 	public void write(int version, EndianDataOutputStream out) throws IOException {
 		out.write(data);
+	}
+	
+	@Override
+	public String toString() {
+		return Hex.toHexString(data);
 	}
 
 }

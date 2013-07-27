@@ -7,6 +7,7 @@ import java.security.MessageDigest;
 
 import org.tiernolan.bitcoin.util.crypt.Digest;
 import org.tiernolan.bitcoin.util.protocol.endian.EndianDataOutputStream;
+import org.tiernolan.bitcoin.util.protocol.message.Version;
 import org.tiernolan.bitcoin.util.protocol.types.MutableHash;
 
 public class BitcoinOutputStream extends EndianDataOutputStream {
@@ -38,7 +39,7 @@ public class BitcoinOutputStream extends EndianDataOutputStream {
 	public void writeMessage(Message message) throws IOException {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		EndianDataOutputStream eos = new EndianDataOutputStream(bos);
-		message.write(version, eos);
+		message.write(Version.VERSION, eos);
 		eos.flush();
 		eos.close();
 		byte[] data = bos.toByteArray();
@@ -49,6 +50,7 @@ public class BitcoinOutputStream extends EndianDataOutputStream {
 		writeLEInt(data.length);
 		write(check, 0, 4);
 		write(data);
+		flush();
 	}
 
 }

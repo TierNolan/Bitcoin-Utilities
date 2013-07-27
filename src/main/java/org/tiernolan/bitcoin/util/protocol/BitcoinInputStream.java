@@ -1,5 +1,6 @@
 package org.tiernolan.bitcoin.util.protocol;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.MessageDigest;
@@ -8,6 +9,9 @@ import org.bouncycastle.util.encoders.Hex;
 import org.tiernolan.bitcoin.util.crypt.Digest;
 import org.tiernolan.bitcoin.util.protocol.endian.Endian;
 import org.tiernolan.bitcoin.util.protocol.endian.EndianDataInputStream;
+import org.tiernolan.bitcoin.util.protocol.message.Ping;
+import org.tiernolan.bitcoin.util.protocol.message.Pong;
+import org.tiernolan.bitcoin.util.protocol.message.Verack;
 import org.tiernolan.bitcoin.util.protocol.message.Version;
 import org.tiernolan.bitcoin.util.protocol.types.MutableHash;
 
@@ -53,7 +57,7 @@ public class BitcoinInputStream extends EndianDataInputStream {
 				do {
 					int b = read();
 					if (b == -1) {
-						return Message.EOF;
+						throw new EOFException("End of stream reached while seeking for magic number");
 					}
 					m = (m >> 8) | (b << 24);
 				} while (m != network);
@@ -76,6 +80,36 @@ public class BitcoinInputStream extends EndianDataInputStream {
 		readData();
 		try {
 			return new Version(version, data);
+		} finally {
+			dataRead = false;
+			headerRead = false;
+		}
+	}
+	
+	public Verack readVerack() throws IOException {
+		readData();
+		try {
+			return new Verack(version, data);
+		} finally {
+			dataRead = false;
+			headerRead = false;
+		}
+	}
+	
+	public Ping readPing() throws IOException {
+		readData();
+		try {
+			return new Ping(version, data);
+		} finally {
+			dataRead = false;
+			headerRead = false;
+		}
+	}
+	
+	public Pong readPong() throws IOException {
+		readData();
+		try {
+			return new Pong(version, data);
 		} finally {
 			dataRead = false;
 			headerRead = false;

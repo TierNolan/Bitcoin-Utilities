@@ -3,18 +3,18 @@ package org.tiernolan.bitcoin.util.protocol;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.bouncycastle.util.encoders.Hex;
 import org.tiernolan.bitcoin.util.protocol.types.Hash;
 
 
 public abstract class Message implements MessageType {
 	
 	private static HashMap<Integer, Hash> map = new HashMap<Integer, Hash>();
+	private static HashMap<Integer, String> nameMap = new HashMap<Integer, String>();
 	
 	public static final int MAGIC_MAINNET = 0xD9B4BEF9;
 	public static final int MAGIC_TESTNET = 0xD9B4BEF9;
 	
-	public static final int EOF = -1;
+	public static final int EOF = add("eof");
 	
 	public static final int VERSION = add("version");
 	public static final int VERACK = add("verack");
@@ -39,7 +39,7 @@ public abstract class Message implements MessageType {
 	public static final int MERKLEBLOCK = add("merkleblock");
 	public static final int ALERT = add("alert");
 	
-	public static final int UNKNOWN = add("");
+	public static final int UNKNOWN = add("unknown");
 
 	private final static int mask;
 	private final static Hash[] commandArray;
@@ -57,6 +57,10 @@ public abstract class Message implements MessageType {
 			return h.hashCode();
 		}
 		return UNKNOWN;
+	}
+	
+	public static String getMessageCommand(int id) {
+		return nameMap.get(id);
 	}
 	
 	private static Hash[] findMask() {
@@ -81,6 +85,7 @@ public abstract class Message implements MessageType {
 	private static int add(String command) {
 		Hash h = getCommandHash(command);
 		map.put(h.hashCode(), h);
+		nameMap.put(h.hashCode(), command);
 		return h.hashCode();
 	}
 	

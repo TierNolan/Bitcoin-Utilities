@@ -28,8 +28,12 @@ public class Version extends Message {
 	private boolean relay;
 	
 	public Version(long services, long timestamp, InetAddress peerAddress, int peerPort, InetAddress localAddress, int localPort, long nonce, int height, boolean relay) {
+		this(VERSION, services, timestamp, peerAddress, peerPort, localAddress, localPort, nonce, height, relay);
+	}
+	
+	public Version(int version, long services, long timestamp, InetAddress peerAddress, int peerPort, InetAddress localAddress, int localPort, long nonce, int height, boolean relay) {
 		super("version");
-		this.version = VERSION;
+		this.version = version;
 		this.services = services;
 		this.timestamp = timestamp;
 		this.peerAddress = new NetAddress(peerAddress, peerPort, 0);
@@ -66,14 +70,58 @@ public class Version extends Message {
 			relay = true;
 		}
 	}
+	
+	public int getVersion() {
+		return version;
+	}
+	
+	public long getServices() {
+		return services;
+	}
+	
+	public long getTimestamp() {
+		return timestamp;
+	}
+	
+	public InetAddress getPeerAddress() {
+		return peerAddress.getAddress();
+	}
+	
+	public int getPeerPort() {
+		return peerAddress.getPort();
+	}
+	
+	public InetAddress getLocalAddress() {
+		return localAddress.getAddress();
+	}
+	
+	public int getLocalPort() {
+		return localAddress.getPort();
+	}
+	
+	public long getNonce() {
+		return nonce;
+	}
+	
+	public String getAgent() {
+		return agent.get();
+	}
+	
+	public int getHeight() {
+		return height;
+	}
+	
+	public boolean getRelay() {
+		return relay;
+	}
 
 	@Override
 	public void write(int version, EndianDataOutputStream out) throws IOException {
 		out.writeLEInt(this.version);
 		out.writeLELong(services);
 		out.writeLELong(timestamp);
-		localAddress.write(version, out);
 		peerAddress.write(version, out);
+		localAddress.write(version, out);
 		out.writeLELong(nonce);
 		agent.write(version, out);
 		out.writeLEInt(height);
@@ -89,7 +137,6 @@ public class Version extends Message {
 		if (o == this) {
 			return true;
 		} else if (!(o instanceof Version)) {
-			System.out.println("Failing as not version type");
 			return false;
 		} else {
 			Version other = (Version) o;

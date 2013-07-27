@@ -3,6 +3,8 @@ package org.tiernolan.bitcoin.util.protocol.types;
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.bouncycastle.util.encoders.Hex;
+
 public class MutableHash extends Hash {
 
 	public MutableHash(InputStream in, int length) throws IOException {
@@ -26,6 +28,10 @@ public class MutableHash extends Hash {
 		for (int i = 0; i < s.length() && i < data.length; i++) {
 			data[i] = (byte) s.charAt(i);
 		}
+		for (int i = s.length(); i < data.length; i++) {
+			data[i] = 0;
+		}
+		computeHashCode();
 	}
 	
 	public void read(InputStream in) throws IOException {
