@@ -57,7 +57,7 @@ public class BitcoinServerSocketTest {
 			BitcoinOutputStream cos = s.getOutputStream();
 			BitcoinInputStream cis = s.getInputStream();
 
-			assertEquals("Message id mismatch, version message expected", Message.PING, cis.getNextMessageId());
+			assertEquals("Message id mismatch, version message expected", Message.PING, cis.getCommandId());
 			
 			Ping ping = cis.readPing();
 			

@@ -17,7 +17,7 @@ import org.tiernolan.bitcoin.util.protocol.message.Version;
 public class BitcoinSocketTest {
 
 	private int port = 12345;
-
+	
 	@Test
 	public void test() throws IOException, InterruptedException {
 
@@ -49,7 +49,7 @@ public class BitcoinSocketTest {
 			BitcoinOutputStream cos = new BitcoinOutputStream(Message.MAGIC_MAINNET, s.getOutputStream());
 			BitcoinInputStream cis = new BitcoinInputStream(Message.MAGIC_MAINNET, s.getInputStream());
 
-			assertEquals("Message id mismatch, version message expected", Message.VERSION, cis.getNextMessageId());
+			assertEquals("Message id mismatch, version message expected", Message.VERSION, cis.getCommandId());
 
 			Version ver = cis.readVersion();
 
@@ -59,7 +59,7 @@ public class BitcoinSocketTest {
 
 			cos.writeMessage(reply);
 
-			assertEquals("Message id mismatch, verack message expected", Message.VERACK, cis.getNextMessageId());
+			assertEquals("Message id mismatch, verack message expected", Message.VERACK, cis.getCommandId());
 
 			cos.writeMessage(new Verack());
 
@@ -103,7 +103,7 @@ public class BitcoinSocketTest {
 			BitcoinOutputStream cos = new BitcoinOutputStream(Message.MAGIC_MAINNET, s.getOutputStream());
 			BitcoinInputStream cis = new BitcoinInputStream(Message.MAGIC_MAINNET, s.getInputStream());
 
-			assertEquals("Message id mismatch, version message expected", Message.VERSION, cis.getNextMessageId());
+			assertEquals("Message id mismatch, version message expected", Message.VERSION, cis.getCommandId());
 
 			Version ver = cis.readVersion();
 
@@ -113,7 +113,7 @@ public class BitcoinSocketTest {
 
 			boolean eof = false;
 			try {
-				cis.getNextMessageId();
+				cis.getCommandId();
 			} catch (EOFException e) {
 				eof = true;
 			}

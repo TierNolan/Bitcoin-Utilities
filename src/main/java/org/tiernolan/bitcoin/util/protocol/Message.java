@@ -59,7 +59,7 @@ public abstract class Message implements MessageType {
 		return UNKNOWN;
 	}
 	
-	public static String getMessageCommand(int id) {
+	public static String idToCommand(int id) {
 		return nameMap.get(id);
 	}
 	

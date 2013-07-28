@@ -77,7 +77,7 @@ public class BitcoinSocket extends Socket {
 		
 		long timestamp = System.currentTimeMillis() / 1000;
 		
-		int id = this.cis.getNextMessageId();
+		int id = this.cis.getCommandId();
 		
 		if (id != Message.VERSION) {
 			throw new IOException("Expecting version message response");
@@ -100,7 +100,7 @@ public class BitcoinSocket extends Socket {
 		cis.setVersion(version);
 		cos.setVersion(version);
 		
-		id = this.cis.getNextMessageId();
+		id = this.cis.getCommandId();
 		
 		if (id != Message.VERACK) {
 			throw new IOException("Expecting verack message to complete handshake");
@@ -122,11 +122,9 @@ public class BitcoinSocket extends Socket {
 		
 		Version ver = new Version(services, timestamp, remote.getAddress(), remote.getPort(), localAddress, localPort, nonce, height, relay);
 		
-		System.out.println("Sending version message");
 		this.cos.writeMessage(ver);
-		System.out.println("Sent version message");
 		
-		int id = this.cis.getNextMessageId();
+		int id = this.cis.getCommandId();
 		
 		if (id != Message.VERSION) {
 			throw new IOException("Expecting version message response");
@@ -147,7 +145,7 @@ public class BitcoinSocket extends Socket {
 
 		this.cos.writeMessage(new Verack());
 		
-		id = this.cis.getNextMessageId();
+		id = this.cis.getCommandId();
 		
 		if (id != Message.VERACK) {
 			throw new IOException("Expecting verack message to complete handshake");

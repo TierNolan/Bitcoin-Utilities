@@ -50,7 +50,7 @@ public class BitcoinInputStream extends EndianDataInputStream {
 		}
 	}
 	
-	public int getNextMessageId() throws IOException {
+	public int getCommandId() throws IOException {
 		if (!headerRead) {
 			int m;
 			if ((m = Endian.swap(readInt())) != network) {
@@ -72,8 +72,19 @@ public class BitcoinInputStream extends EndianDataInputStream {
 		return messageId;
 	}
 	
+	public String getCommand() throws IOException {
+		getCommandId();
+		return command.toASCIIString();
+	}
+	
 	public void setVersion(int version) {
 		this.version = version;
+	}
+	
+	public void skipMessage() throws IOException {
+		readData();
+		dataRead = false;
+		headerRead = false;
 	}
 	
 	public Version readVersion() throws IOException {
@@ -118,7 +129,7 @@ public class BitcoinInputStream extends EndianDataInputStream {
 
 	protected void readData() throws IOException {
 		if (!headerRead) {
-			getNextMessageId();
+			getCommandId();
 		}
 		if (dataRead) {
 			return;

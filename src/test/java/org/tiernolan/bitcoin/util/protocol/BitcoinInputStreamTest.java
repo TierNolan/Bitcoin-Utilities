@@ -34,7 +34,7 @@ public class BitcoinInputStreamTest {
 		ByteArrayInputStream bis = new ByteArrayInputStream(serialized);
 		BitcoinInputStream cis = new BitcoinInputStream(Message.MAGIC_MAINNET, bis);
 		
-		assertEquals("Unexcepted message type", Message.VERSION, cis.getNextMessageId());
+		assertEquals("Unexcepted message type", Message.VERSION, cis.getCommandId());
 		
 		Version ver2 = cis.readVersion();
 		

@@ -81,5 +81,17 @@ public class Hash implements MessageType {
 	public String toString() {
 		return Hex.toHexString(data);
 	}
+	
+	public String toASCIIString() {
+		char[] chars = new char[data.length];
+		int length = 0;
+		for (int i = 0; i < chars.length; i++) {
+			chars[i] = (char) (data[i] & 0xFF);
+			if (chars[i] != 0) {
+				length = i + 1;
+			}
+		}
+		return new String(chars, 0, length);
+	}
 
 }
