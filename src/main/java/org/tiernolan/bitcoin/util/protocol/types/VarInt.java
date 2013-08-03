@@ -65,4 +65,9 @@ public class VarInt implements MessageType {
 		}
 	}
 	
+	@Override
+	public int hashCode() {
+		return (int) (value ^ (value >> 32));
+	}
+	
 }

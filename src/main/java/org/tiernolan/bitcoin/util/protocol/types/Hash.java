@@ -56,7 +56,7 @@ public class Hash implements MessageType {
 	protected void computeHashCode() {
 		hash = 1;
 		for (int i = 0; i < data.length; i++) {
-			hash = (31 * hash) + (int) data[i];
+			hash = (hash << 5) - hash + (int) data[i];
 		}
 	}
 	
@@ -64,8 +64,6 @@ public class Hash implements MessageType {
 	public boolean equals(final Object o) {
 		if (o == null) {
 			return false;
-		} else if (o == this) {
-			return true;
 		} else if (!(o instanceof Hash)) {
 			return false;
 		} else {

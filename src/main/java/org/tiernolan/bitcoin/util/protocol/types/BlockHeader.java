@@ -127,4 +127,20 @@ public class BlockHeader implements MessageType {
 		return new Hash(hash);
 	}
 	
+	@Override
+	public boolean equals(Object o) {
+		if (o == this) {
+			return true;
+		} else if (!(o instanceof BlockHeader)) {
+			return false;
+		} else {
+			return ((BlockHeader) o).blockHash.equals(blockHash);
+		}
+	}
+	
+	@Override
+	public int hashCode() {
+		return blockHash.hashCode();
+	}
+	
 }

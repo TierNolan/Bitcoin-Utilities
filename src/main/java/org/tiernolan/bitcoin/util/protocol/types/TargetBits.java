@@ -37,11 +37,18 @@ public class TargetBits implements MessageType {
 	
 	@Override
 	public boolean equals(Object o) {
-		if (!(o instanceof TargetBits)) {
+		if (o == this) {
+			return true;
+		} else if (!(o instanceof TargetBits)) {
 			return false;
 		} else {
 			return bits == ((TargetBits) o).bits;
 		}
+	}
+	
+	@Override
+	public int hashCode() {
+		return bits;
 	}
 
 	public static int targetToBits(BigInteger target) {

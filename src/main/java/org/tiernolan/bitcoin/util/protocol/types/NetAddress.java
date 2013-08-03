@@ -43,8 +43,8 @@ public class NetAddress implements MessageType {
 			this.ip = new Hash(bytes);
 		}
 		try {
-			this.addr = InetAddress.getByAddress(ip.getData());
-		} catch (UnknownHostException e) {
+			this.addr = getInetAddress(ip);
+		} catch (IOException e) {
 			throw new IllegalStateException("InetAddress.getByAddress should not throw an exception", e);
 		}
 		this.hasTimestamp = hasTimestamp;
@@ -113,25 +113,25 @@ public class NetAddress implements MessageType {
 				return false;
 			}
 			
-			if (other.hasTimestamp) {
-				if (!hasTimestamp) {
-					return false;
-				}
-				if (timestamp != other.timestamp) {
-					return false;
-				}
-			} else {
-				if (hasTimestamp) {
-					return false;
-				}
+			if (hasTimestamp != other.hasTimestamp) {
+				return false;
 			}
 			
+			if (hasTimestamp && (timestamp != other.timestamp)) {
+				return false;
+			}
+
 			if (other.services != services) {
 				return false;
 			}
 			
 			return ip.equals(other.ip);
 		}
+	}
+	
+	@Override
+	public int hashCode() {
+		return (int) (port + (hasTimestamp ? timestamp : 0) + services + (services >> 32) + ip.hashCode());
 	}
 
 }

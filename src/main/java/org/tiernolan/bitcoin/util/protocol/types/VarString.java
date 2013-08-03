@@ -60,6 +60,15 @@ public class VarString implements MessageType {
 	}
 	
 	@Override
+	public int hashCode() {
+		int hash = 1;
+		for (int i = 0; i < string.length; i++) {
+			hash = (hash << 5) - hash + (int) string[i];
+		}
+		return hash;
+	}
+	
+	@Override
 	public String toString() {
 		return get();
 	}
