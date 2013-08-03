@@ -1,9 +1,14 @@
 package org.tiernolan.bitcoin.util.protocol;
 
+import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.bouncycastle.util.encoders.Hex;
+import org.tiernolan.bitcoin.util.encoding.ByteArray;
+import org.tiernolan.bitcoin.util.protocol.types.BlockHeader;
 import org.tiernolan.bitcoin.util.protocol.types.Hash;
+import org.tiernolan.bitcoin.util.protocol.types.TargetBits;
 
 
 public abstract class Message implements MessageType {
@@ -13,6 +18,16 @@ public abstract class Message implements MessageType {
 	
 	public static final int MAGIC_MAINNET = 0xD9B4BEF9;
 	public static final int MAGIC_TESTNET = 0xD9B4BEF9;
+	
+	public static final BlockHeader GENESIS_MAINNET = new BlockHeader(1, new Hash(new byte[32]), new Hash(ByteArray.reverse(Hex.decode("4a5e1e4baab89f3a32518a88c31bc87f618f76673e2cc77ab2127b7afdeda33b"))), 1231006505, TargetBits.bitsToTarget(486604799), 2083236893, 0);
+	
+	public static final int RETARGET_TIMESPAN = 14 * 24 * 60 * 60;
+	public static final int RETARGET_SPACING = 10 * 60;
+	public static final int RETARGET_INTERVAL = RETARGET_TIMESPAN / RETARGET_SPACING;
+	
+	public static final BigInteger MAX_TARGET_MAINNET = BigInteger.ONE.shiftLeft(256 - 32).subtract(BigInteger.ONE);
+	
+	public static final int MAX_HEADERS = 2000;
 	
 	public static final int EOF = add("eof");
 	

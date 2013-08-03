@@ -9,6 +9,8 @@ import org.bouncycastle.util.encoders.Hex;
 import org.tiernolan.bitcoin.util.crypt.Digest;
 import org.tiernolan.bitcoin.util.protocol.endian.Endian;
 import org.tiernolan.bitcoin.util.protocol.endian.EndianDataInputStream;
+import org.tiernolan.bitcoin.util.protocol.message.GetHeaders;
+import org.tiernolan.bitcoin.util.protocol.message.Headers;
 import org.tiernolan.bitcoin.util.protocol.message.Ping;
 import org.tiernolan.bitcoin.util.protocol.message.Pong;
 import org.tiernolan.bitcoin.util.protocol.message.Verack;
@@ -127,6 +129,26 @@ public class BitcoinInputStream extends EndianDataInputStream {
 		}
 	}
 
+	public GetHeaders readGetHeaders() throws IOException {
+		readData();
+		try {
+			return new GetHeaders(version, data);
+		} finally {
+			dataRead = false;
+			headerRead = false;
+		}
+	}
+	
+	public Headers readHeaders() throws IOException {
+		readData();
+		try {
+			return new Headers(version, data);
+		} finally {
+			dataRead = false;
+			headerRead = false;
+		}
+	}
+	
 	protected void readData() throws IOException {
 		if (!headerRead) {
 			getCommandId();

@@ -35,6 +35,19 @@ public class Hash implements MessageType {
 		return d;
 	}
 	
+	public byte[] getReverseData() {
+		byte[] d = new byte[data.length];
+		int j = data.length - 1;
+		for (int i = 0; i < d.length; i++) {
+			d[i] = data[j--];
+		}
+		return d;
+	}
+	
+	public int getLength() {
+		return data.length;
+	}
+	
 	@Override
 	public int hashCode() {
 		return hash;
@@ -92,6 +105,13 @@ public class Hash implements MessageType {
 			}
 		}
 		return new String(chars, 0, length);
+	}
+	
+	public Hash copy() {
+		if (!getClass().equals(Hash.class)) {
+			throw new IllegalStateException("The copy method has no override by the sub-class");
+		}
+		return this;
 	}
 
 }

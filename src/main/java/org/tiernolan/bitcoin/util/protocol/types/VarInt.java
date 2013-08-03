@@ -32,6 +32,11 @@ public class VarInt implements MessageType {
 	}
 	
 	@Override
+	public String toString() {
+		return Long.toString(get());
+	}
+	
+	@Override
 	public void write(int version, EndianDataOutputStream out) throws IOException {
 		if ((value & 0xFFFFFFFF00000000L) != 0) {
 			out.writeByte(0xFF);

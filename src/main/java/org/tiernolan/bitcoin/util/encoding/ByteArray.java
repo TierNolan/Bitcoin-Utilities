@@ -18,5 +18,33 @@ public class ByteArray {
 		return temp;
 		
 	}
+	
+	public static int compare(byte[] a, byte[] b, int length) {
+		return compare(rightJustify(a, length), rightJustify(b, length));
+	}
+
+	public static int compare(byte[] a, byte[] b) {
+		if (a.length != b.length) {
+			throw new IllegalArgumentException("Arrays must be the same length to compare");
+		}
+		for (int i = 0; i < a.length; i++) {
+			int d = (a[i] & 0xFF) - (b[i] & 0xFF);
+			if (d != 0) {
+				return d;
+			}
+		}
+		return 0;
+	}
+	
+	public static byte[] reverse(byte[] a) {
+		int j = a.length - 1;
+		for (int i = 0; i < a.length / 2; i++) {
+			byte t = a[i];
+			a[i] = a[j];
+			a[j] = t;
+			j--;
+		}
+		return a;
+	}
 
 }
