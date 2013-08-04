@@ -17,7 +17,7 @@ import org.tiernolan.bitcoin.util.protocol.message.Version;
 public class BitcoinSocketTest {
 
 	private int port = 12345;
-	
+
 	@Test
 	public void test() throws IOException, InterruptedException {
 

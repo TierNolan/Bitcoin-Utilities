@@ -149,6 +149,10 @@ public class BitcoinInputStream extends EndianDataInputStream {
 		}
 	}
 	
+	public int getVersion() {
+		return version;
+	}
+	
 	protected void readData() throws IOException {
 		if (!headerRead) {
 			getCommandId();

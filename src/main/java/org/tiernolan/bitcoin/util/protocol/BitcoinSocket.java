@@ -4,10 +4,16 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.util.Arrays;
 
+import org.tiernolan.bitcoin.util.chain.BlockTree;
+import org.tiernolan.bitcoin.util.chain.MisbehaveException;
+import org.tiernolan.bitcoin.util.protocol.message.GetHeaders;
+import org.tiernolan.bitcoin.util.protocol.message.Headers;
 import org.tiernolan.bitcoin.util.protocol.message.Verack;
 import org.tiernolan.bitcoin.util.protocol.message.Version;
 import org.tiernolan.bitcoin.util.protocol.types.BlockHeader;
+import org.tiernolan.bitcoin.util.protocol.types.Hash;
 
 public class BitcoinSocket extends Socket {
 	
@@ -68,6 +74,30 @@ public class BitcoinSocket extends Socket {
 	@Override
 	public BitcoinInputStream getInputStream() {
 		return cis;
+	}
+
+	public boolean downloadHeaders(BlockTree tree) throws IOException {
+		boolean added = false;
+		while (true) {
+			Hash[] locators = tree.getBlockLocator();
+			GetHeaders getHeaders = new GetHeaders(Message.VERSION, locators, new Hash(new byte[32]));
+			do {
+				getOutputStream().writeMessage(getHeaders);
+			} while (getInputStream().getCommandId() != Message.HEADERS);
+			Headers headers = getInputStream().readHeaders();
+			BlockHeader[] blockHeaders = headers.getBlockHeaders();
+			if (blockHeaders.length == 0) {
+				break;
+			}
+			for (BlockHeader h : blockHeaders) {
+				try {
+					added |= tree.add(h);
+				} catch (MisbehaveException e) {
+					throw new IOException(e);
+				}
+			}
+		}
+		return added;
 	}
 	
 	private void connectClient() throws IOException {

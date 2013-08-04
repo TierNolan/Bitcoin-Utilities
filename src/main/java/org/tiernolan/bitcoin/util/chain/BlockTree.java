@@ -4,6 +4,7 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 
 import org.tiernolan.bitcoin.util.protocol.Message;
 import org.tiernolan.bitcoin.util.protocol.types.BlockHeader;
@@ -31,9 +32,10 @@ public class BlockTree {
 		this(genesis, minPOW, true);
 	}
 	
-	protected BlockTree(BlockHeader genesis, BigInteger maxPOW, boolean checkPOW) {
+	public BlockTree(BlockHeader genesis, BigInteger maxPOW, boolean checkPOW) {
 		this.mainLeaf = new BlockTreeLink(null, genesis, BigInteger.ZERO, 0);
 		this.tree.put(genesis.getBlockHash(), mainLeaf);
+		this.mainChain.add(mainLeaf);
 		this.checkPOW = checkPOW;
 		this.maxPOW = maxPOW;
 	}
@@ -183,6 +185,21 @@ public class BlockTree {
 		
 		return true;
 		
+	}
+	
+	public synchronized Hash[] getBlockLocator() {
+		List<Hash> locators = new ArrayList<Hash>(20);
+		int h;
+		for (h = getHeight() - 1; h >= 0 && h > getHeight() - 10; h--) {
+			locators.add(this.getHeader(h).getBlockHash());
+		}
+		int step = 1;
+		for (; h > 0; h -= step) {
+			locators.add(this.getHeader(h).getBlockHash());
+			step = step << 1;
+		}
+		locators.add(getHeader(0).getBlockHash());
+		return locators.toArray(new Hash[0]);
 	}
 	
 	public synchronized TargetBits getRetarget(BlockHeader header) {
