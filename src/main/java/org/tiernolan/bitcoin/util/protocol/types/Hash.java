@@ -3,6 +3,7 @@ package org.tiernolan.bitcoin.util.protocol.types;
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.bouncycastle.util.Arrays;
 import org.bouncycastle.util.encoders.Hex;
 import org.tiernolan.bitcoin.util.protocol.MessageType;
 import org.tiernolan.bitcoin.util.protocol.endian.EndianDataOutputStream;
@@ -54,10 +55,7 @@ public class Hash implements MessageType {
 	}
 	
 	protected void computeHashCode() {
-		hash = 1;
-		for (int i = 0; i < data.length; i++) {
-			hash = (hash << 5) - hash + (int) data[i];
-		}
+		hash = Arrays.hashCode(data);
 	}
 	
 	@Override

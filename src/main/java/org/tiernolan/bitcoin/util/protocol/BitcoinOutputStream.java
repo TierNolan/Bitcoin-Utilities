@@ -36,7 +36,7 @@ public class BitcoinOutputStream extends EndianDataOutputStream {
 		this.version = version;
 	}
 	
-	public void writeMessage(Message message) throws IOException {
+	public synchronized void writeMessage(Message message) throws IOException {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		EndianDataOutputStream eos = new EndianDataOutputStream(bos);
 		message.write(Version.VERSION, eos);

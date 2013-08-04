@@ -1,15 +1,14 @@
 package org.tiernolan.bitcoin.util.protocol.types;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 
-import org.tiernolan.bitcoin.util.crypt.Digest;
 import org.tiernolan.bitcoin.util.encoding.ByteArray;
+import org.tiernolan.bitcoin.util.encoding.StringCreator;
+import org.tiernolan.bitcoin.util.protocol.Message;
 import org.tiernolan.bitcoin.util.protocol.MessageType;
 import org.tiernolan.bitcoin.util.protocol.endian.EndianDataInputStream;
 import org.tiernolan.bitcoin.util.protocol.endian.EndianDataOutputStream;
-import org.tiernolan.bitcoin.util.protocol.message.Version;
 
 public class BlockHeader implements MessageType {
 
@@ -39,7 +38,7 @@ public class BlockHeader implements MessageType {
 		this.txCount = new VarInt(txCount);
 		
 		try {
-			this.blockHash = getHash(version, prev, merkle, timestamp, bits.getBits(), nonce);
+			this.blockHash = Message.getHash(version, this);
 		} catch (IOException e) {
 			throw new IllegalStateException("Block hash calculations should not cause an IOException", e);
 		}
@@ -55,7 +54,7 @@ public class BlockHeader implements MessageType {
 		
 		this.txCount = new VarInt(version, in);
 		
-		this.blockHash = getHash(this.version, prev, merkle, timestamp, bits.getBits(), nonce);
+		this.blockHash = Message.getHash(version, this);
 	}
 
 	@Override
@@ -109,24 +108,7 @@ public class BlockHeader implements MessageType {
 		byte[] target = bits.getTarget().toByteArray();
 		return ByteArray.compare(hash, target, 32) <= 0;
 	}
-	
-	private static Hash getHash(int version, Hash prev, Hash merkle, int timestamp, int bits, int nonce) throws IOException {
-		ByteArrayOutputStream bos = new ByteArrayOutputStream(80);
-		EndianDataOutputStream eos = new EndianDataOutputStream(bos);
-		
-		eos.writeLEInt(version);
-		prev.write(Version.VERSION, eos);
-		merkle.write(Version.VERSION, eos);
-		eos.writeLEInt(timestamp);
-		eos.writeLEInt(bits);
-		eos.writeLEInt(nonce);
-		eos.flush();
-		
-		byte[] header = bos.toByteArray();
-		byte[] hash = Digest.doubleSHA256(header);
-		return new Hash(hash);
-	}
-	
+
 	@Override
 	public boolean equals(Object o) {
 		if (o == this) {
@@ -141,6 +123,20 @@ public class BlockHeader implements MessageType {
 	@Override
 	public int hashCode() {
 		return blockHash.hashCode();
+	}
+	
+	@Override
+	public String toString() {
+		return new StringCreator()
+			.add("blockHash", blockHash)
+			.add("version", version)
+			.add("previous", prev)
+			.add("merkle", merkle)
+			.add("timestamp", timestamp)
+			.add("bits", bits)
+			.add("nonce", nonce)
+			.add("txCount", txCount)
+			.toString();
 	}
 	
 }

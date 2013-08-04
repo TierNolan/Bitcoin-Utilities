@@ -5,6 +5,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 import org.tiernolan.bitcoin.util.encoding.ByteArray;
+import org.tiernolan.bitcoin.util.encoding.StringCreator;
 import org.tiernolan.bitcoin.util.protocol.MessageType;
 import org.tiernolan.bitcoin.util.protocol.endian.EndianDataInputStream;
 import org.tiernolan.bitcoin.util.protocol.endian.EndianDataOutputStream;
@@ -132,6 +133,19 @@ public class NetAddress implements MessageType {
 	@Override
 	public int hashCode() {
 		return (int) (port + (hasTimestamp ? timestamp : 0) + services + (services >> 32) + ip.hashCode());
+	}
+	
+	@Override
+	public String toString() {
+		StringCreator sc = new StringCreator();
+		if (hasTimestamp) {
+			sc = sc.add("timestamp", timestamp);
+		}
+		return sc
+			.add("services", services)
+			.add("ip", ip)
+			.add("port", port)
+			.toString();
 	}
 
 }

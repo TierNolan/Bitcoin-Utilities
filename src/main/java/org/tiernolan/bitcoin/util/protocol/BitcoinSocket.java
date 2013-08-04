@@ -7,6 +7,7 @@ import java.net.Socket;
 
 import org.tiernolan.bitcoin.util.protocol.message.Verack;
 import org.tiernolan.bitcoin.util.protocol.message.Version;
+import org.tiernolan.bitcoin.util.protocol.types.BlockHeader;
 
 public class BitcoinSocket extends Socket {
 	

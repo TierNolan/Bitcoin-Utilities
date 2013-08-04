@@ -3,6 +3,7 @@ package org.tiernolan.bitcoin.util.protocol.types;
 import java.io.IOException;
 import java.math.BigInteger;
 
+import org.tiernolan.bitcoin.util.encoding.StringCreator;
 import org.tiernolan.bitcoin.util.protocol.MessageType;
 import org.tiernolan.bitcoin.util.protocol.endian.EndianDataInputStream;
 import org.tiernolan.bitcoin.util.protocol.endian.EndianDataOutputStream;
@@ -111,6 +112,14 @@ public class TargetBits implements MessageType {
 		} else {
 			return m;
 		}
+	}
+	
+	@Override
+	public String toString() {
+		return new StringCreator()
+			.add("bits", bits)
+			.add("target", target)
+			.toString();
 	}
 
 }

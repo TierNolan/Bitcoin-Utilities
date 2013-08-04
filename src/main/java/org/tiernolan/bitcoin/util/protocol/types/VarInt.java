@@ -2,6 +2,7 @@ package org.tiernolan.bitcoin.util.protocol.types;
 
 import java.io.IOException;
 
+import org.tiernolan.bitcoin.util.encoding.StringCreator;
 import org.tiernolan.bitcoin.util.protocol.MessageType;
 import org.tiernolan.bitcoin.util.protocol.endian.EndianDataInputStream;
 import org.tiernolan.bitcoin.util.protocol.endian.EndianDataOutputStream;
@@ -33,7 +34,9 @@ public class VarInt implements MessageType {
 	
 	@Override
 	public String toString() {
-		return Long.toString(get());
+		return new StringCreator()
+			.add(get())
+			.toString();
 	}
 	
 	@Override

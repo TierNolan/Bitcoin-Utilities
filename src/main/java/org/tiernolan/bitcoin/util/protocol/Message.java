@@ -1,11 +1,15 @@
 package org.tiernolan.bitcoin.util.protocol;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.bouncycastle.util.encoders.Hex;
+import org.tiernolan.bitcoin.util.crypt.Digest;
 import org.tiernolan.bitcoin.util.encoding.ByteArray;
+import org.tiernolan.bitcoin.util.protocol.endian.EndianDataOutputStream;
 import org.tiernolan.bitcoin.util.protocol.types.BlockHeader;
 import org.tiernolan.bitcoin.util.protocol.types.Hash;
 import org.tiernolan.bitcoin.util.protocol.types.TargetBits;
@@ -24,6 +28,8 @@ public abstract class Message implements MessageType {
 	public static final int RETARGET_TIMESPAN = 14 * 24 * 60 * 60;
 	public static final int RETARGET_SPACING = 10 * 60;
 	public static final int RETARGET_INTERVAL = RETARGET_TIMESPAN / RETARGET_SPACING;
+	
+	public static final int MAX_SCRIPT_LENGTH = 10000;
 	
 	public static final BigInteger MAX_TARGET_MAINNET = BigInteger.ONE.shiftLeft(256 - 32).subtract(BigInteger.ONE);
 	
@@ -127,6 +133,17 @@ public abstract class Message implements MessageType {
 	
 	public String getCommand() {
 		return command;
+	}
+	
+	public static Hash getHash(int version, MessageType messageType) throws IOException {
+		ByteArrayOutputStream bos = new ByteArrayOutputStream(80);
+		EndianDataOutputStream eos = new EndianDataOutputStream(bos);
+		
+		messageType.write(version, eos);
+		
+		byte[] bytes = bos.toByteArray();
+		byte[] hash = Digest.doubleSHA256(bytes);
+		return new Hash(hash);
 	}
 
 }

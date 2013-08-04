@@ -3,6 +3,7 @@ package org.tiernolan.bitcoin.util.protocol.types;
 import java.io.IOException;
 import java.util.Arrays;
 
+import org.tiernolan.bitcoin.util.encoding.StringCreator;
 import org.tiernolan.bitcoin.util.protocol.MessageType;
 import org.tiernolan.bitcoin.util.protocol.endian.EndianDataInputStream;
 import org.tiernolan.bitcoin.util.protocol.endian.EndianDataOutputStream;
@@ -61,16 +62,14 @@ public class VarString implements MessageType {
 	
 	@Override
 	public int hashCode() {
-		int hash = 1;
-		for (int i = 0; i < string.length; i++) {
-			hash = (hash << 5) - hash + (int) string[i];
-		}
-		return hash;
+		return Arrays.hashCode(string);
 	}
 	
 	@Override
 	public String toString() {
-		return get();
+		return new StringCreator()
+			.add(get())
+			.toString();
 	}
 
 }
