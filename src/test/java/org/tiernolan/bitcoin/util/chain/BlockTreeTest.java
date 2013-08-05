@@ -5,6 +5,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.math.BigInteger;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Random;
 
 import org.junit.Test;
@@ -184,7 +186,88 @@ public class BlockTreeTest {
 			assertTrue("Unable to add fork header", tree.add(fork[i]));
 		}
 		
+		for (int i = 0; i < 11; i++) {
+			assertEquals("Unexpected main chain header", main[i], tree.getHeader(i + 1));
+		}
+		
+		for (int i = 11; i < 11 + fork.length; i++) {
+			assertEquals("Unexpected main chain header (after fork replacement)", fork[i - 11], tree.getHeader(i + 1));
+		}
+	}
+	
+	@Test 
+	public void testMonitor() throws MisbehaveException {
+		
+		Random r = new Random();
+		
+		BlockHeader genesis = getHeader(r);
+		
+		BlockTree tree = new BlockTree(genesis, null, false);
+		
+		BlockHeader[] main = new BlockHeader[20];
+		BlockHeader[] fork = new BlockHeader[20];
+		
+		main[0] = getHeader(genesis.getBlockHash(), r);
+		
+		for (int i = 1; i < main.length; i++) {
+			main[i] = getHeader(main[i - 1].getBlockHash(), r);
+		}
+		
+		fork[0] = getHeader(main[10].getBlockHash(), r);
+		
+		for (int i = 1; i < fork.length; i++) {
+			fork[i] = getHeader(fork[i - 1].getBlockHash(), r);
+		}
+		
+		final LinkedList<BlockHeader> addedList = new LinkedList<BlockHeader>();
+		final LinkedList<BlockHeader> removeList = new LinkedList<BlockHeader>();
+		
+		tree.addTreeMonitor(new TreeMonitor() {
+			@Override
+			public void handle(BlockHeader header, boolean removed) {
+				if (removed) {
+					removeList.add(header);
+				} else {
+					addedList.add(header);
+				}
+			}
+		});
+		
+		for (int i = 0; i < main.length; i++) {
+			assertTrue("Unable to add main header", tree.add(main[i]));
+			assertTrue("Tree monitor not called when header added", addedList.removeFirst() == main[i]);
+			assertTrue("Header added to removed list when adding to main chain", removeList.isEmpty());
+		}
+		
+		for (int i = 0; i < 9; i++) {
+			assertTrue("Unable to add fork header", tree.add(fork[i]));
+			assertTrue("Header added to removed list when adding to fork", removeList.isEmpty());
+			assertTrue("Header added to added list when adding to fork", addedList.isEmpty());
+		}
+		
+		assertTrue("Unable to add main header", tree.add(fork[9]));
+		
+		for (int i = main.length - 1; i > 10; i--) {
+			BlockHeader h = removeList.pollFirst();
+			assertTrue("Removed main chain headers not added to removed list", h == main[i]);
+		}
+
 		for (int i = 0; i < 10; i++) {
+			assertTrue("Added new main chain headers not added to added list", addedList.removeFirst() == fork[i]);
+		}
+		
+		assertTrue("Remove list not empty", removeList.isEmpty());
+		assertTrue("Added list not empty", addedList.isEmpty());
+		
+		assertFalse("Main leaf not displaced when fork had more POW", tree.isOnMain(main[main.length - 1]));
+		
+		for (int i = 10; i < fork.length; i++) {
+			assertTrue("Unable to add fork header", tree.add(fork[i]));
+			assertTrue("Tree monitor not called when header added", addedList.removeFirst() == fork[i]);
+			assertTrue("Header added to removed list when adding to main chain", removeList.isEmpty());
+		}
+		
+		for (int i = 0; i < 11; i++) {
 			assertEquals("Unexpected main chain header", main[i], tree.getHeader(i + 1));
 		}
 		

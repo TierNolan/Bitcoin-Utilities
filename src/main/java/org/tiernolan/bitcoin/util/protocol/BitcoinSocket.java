@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.util.Arrays;
 
 import org.tiernolan.bitcoin.util.chain.BlockTree;
 import org.tiernolan.bitcoin.util.chain.MisbehaveException;

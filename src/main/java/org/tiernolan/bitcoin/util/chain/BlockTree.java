@@ -4,6 +4,7 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.tiernolan.bitcoin.util.protocol.Message;
@@ -25,9 +26,10 @@ public class BlockTree {
 	
 	private final boolean checkPOW;
 	
+	private ArrayList<TreeMonitor> treeMonitors = new ArrayList<TreeMonitor>(1);
+	
 	private BlockTreeLink mainLeaf;
 	
-
 	public BlockTree(BlockHeader genesis, BigInteger minPOW) {
 		this(genesis, minPOW, true);
 	}
@@ -40,6 +42,37 @@ public class BlockTree {
 		this.maxPOW = maxPOW;
 	}
 	
+	/**
+	 * Adds the monitor to the list of tree monitors
+	 * 
+	 * @param monitor
+	 * @return
+	 */
+	public synchronized boolean addTreeMonitor(TreeMonitor monitor) {
+		for (TreeMonitor m : treeMonitors) {
+			if (m == monitor) {
+				return false;
+			}
+		}
+		return treeMonitors.add(monitor);
+	}
+	
+	/**
+	 * Removes the monitor to the list of tree monitors
+	 * 
+	 * @param monitor
+	 * @return
+	 */
+	public synchronized boolean removeTreeMonitor(TreeMonitor monitor) {
+		return treeMonitors.remove(monitor);
+	}
+	
+	/**
+	 * Gets the BlockHeader on the main chain with height index
+	 * 
+	 * @param index the height, the genesis block is zero
+	 * @return
+	 */
 	public synchronized BlockHeader getHeader(int index) {
 		if (index < 0) {
 			throw new IllegalArgumentException("Negative block indexes are invalid");
@@ -49,6 +82,12 @@ public class BlockTree {
 		return mainChain.get(index).getHeader();
 	}
 	
+	/**
+	 * Gets the previous BlockHeader from a BlockHeader.
+	 * 
+	 * @param header
+	 * @return
+	 */
 	public synchronized BlockHeader getParent(BlockHeader header) {
 		BlockTreeLink link = tree.get(header.getBlockHash());
 		if (link == null) {
@@ -61,6 +100,12 @@ public class BlockTree {
 		return parent.getHeader();
 	}
 	
+	/**
+	 * Gets the next main chain BlockHeader from a BlockHeader.<br>
+	 * 
+	 * @param header
+	 * @return
+	 */
 	public synchronized BlockHeader getNext(BlockHeader header) {
 		BlockTreeLink link = tree.get(header.getBlockHash());
 		if (link == null) {
@@ -73,6 +118,12 @@ public class BlockTree {
 		return next.getHeader();
 	}
 	
+	/**
+	 * Gets if the BlockHeader is on the main chain
+	 * 
+	 * @param header
+	 * @return
+	 */
 	public synchronized boolean isOnMain(BlockHeader header) {
 		BlockTreeLink link = tree.get(header.getBlockHash());
 		if (link == null) {
@@ -81,6 +132,12 @@ public class BlockTree {
 		return link.isOnMain();
 	}
 	
+	/**
+	 * Gets all child BlockHeaders from a BlockHeader
+	 * 
+	 * @param header
+	 * @return
+	 */
 	public synchronized Collection<BlockHeader> getAllNext(BlockHeader header) {
 		BlockTreeLink link = tree.get(header.getBlockHash());
 		if (link == null) {
@@ -97,6 +154,44 @@ public class BlockTree {
 		return children;
 	}
 	
+	/**
+	 * Gets the distance from the genesis block to a BlockHeader
+	 * 
+	 * @param header
+	 * @return
+	 */
+	public synchronized int getHeight(BlockHeader header) {
+		BlockTreeLink link = tree.get(header.getBlockHash());
+		if (link == null) {
+			return -1;
+		}
+		return link.getHeight();
+	}
+	
+	/**
+	 * Gets the number of confirms received by the header
+	 * 
+	 * @param header
+	 * @return
+	 */
+	public synchronized int getConfirms(BlockHeader header) {
+		BlockTreeLink link = tree.get(header.getBlockHash());
+		if (link == null) {
+			return -1;
+		}
+		if (!link.isOnMain()) {
+			return -1;
+		}
+		return getHeight() - link.getHeight();
+	}
+	
+	/**
+	 * Adds a BlockHeader to the tree.  
+	 * 
+	 * @param header
+	 * @return true if the BlockHeader was added to the tree or the orphan store
+	 * @throws MisbehaveException
+	 */
 	public synchronized boolean add(BlockHeader header) throws MisbehaveException {
 		
 		if (header == null) {
@@ -156,8 +251,13 @@ public class BlockTree {
 				}
 
 				boolean done = false;
+				
+				LinkedList<BlockHeader> reorgReplaced = new LinkedList<BlockHeader>();
+				LinkedList<BlockHeader> reorgNew = new LinkedList<BlockHeader>();
+				
 				while (!done) {
 					while (oldPath.getHeight() > newPath.getHeight()) {
+						reorgReplaced.add(oldPath.getHeader());
 						oldPath.setOnFork();
 						oldPath = oldPath.getPrevious();
 					}
@@ -166,12 +266,21 @@ public class BlockTree {
 					
 					if (!done) {
 						mainChain.set(newPath.getHeight(), newPath);
+						reorgNew.addFirst(newPath.getHeader());
 						
 						if (!newPath.getPrevious().setMainChild(newPath)) {
 							throw new IllegalStateException("Link not correctly recorded on parent link");
 						}
 						
 						newPath = newPath.getPrevious();
+					}
+				}
+				for (TreeMonitor m : treeMonitors) {
+					for (BlockHeader h : reorgReplaced) {
+						m.handle(h, true);
+					}
+					for (BlockHeader h : reorgNew) {
+						m.handle(h, false);
 					}
 				}
 				mainLeaf = link;
@@ -187,6 +296,13 @@ public class BlockTree {
 		
 	}
 	
+	/**
+	 * Gets a set of Hashes for the block locator field.<br>
+	 * <br>
+	 * The last 10 hashes on the main chain are included, and then the step size doubles.
+	 * 
+	 * @return
+	 */
 	public synchronized Hash[] getBlockLocator() {
 		List<Hash> locators = new ArrayList<Hash>(20);
 		int h;
@@ -201,23 +317,17 @@ public class BlockTree {
 		locators.add(getHeader(0).getBlockHash());
 		return locators.toArray(new Hash[0]);
 	}
-	
-	public synchronized TargetBits getRetarget(BlockHeader header) {
-		BlockTreeLink link = tree.get(header.getBlockHash());
-		if (link == null) {
-			return null;
-		}
-		if (link.getHeight() < Message.RETARGET_INTERVAL) {
-			return null;
-		}
-		return getRetarget(link);
-	}
-	
+
+	/**
+	 * Gets the length of the main chain
+	 * 
+	 * @return
+	 */
 	public synchronized int getHeight() {
 		return mainChain.size();
 	}
 	
-	private TargetBits getRetarget(BlockTreeLink prevLink) {
+	private synchronized TargetBits getRetarget(BlockTreeLink prevLink) {
 		
 		if (((prevLink.getHeight() + 1) % Message.RETARGET_INTERVAL) != 0) {
 			return prevLink.getHeader().getTarget();
