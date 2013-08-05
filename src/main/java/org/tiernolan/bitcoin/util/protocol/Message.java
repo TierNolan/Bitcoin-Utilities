@@ -30,6 +30,9 @@ public abstract class Message implements MessageType {
 	public static final int RETARGET_INTERVAL = RETARGET_TIMESPAN / RETARGET_SPACING;
 	
 	public static final int MAX_SCRIPT_LENGTH = 10000;
+	public static final int MAX_INV_SZ = 50000;
+	
+	public static final BigInteger MIN_POW = TargetBits.bitsToTarget(0x1d00FFFF);
 	
 	public static final BigInteger MAX_TARGET_MAINNET = BigInteger.ONE.shiftLeft(256 - 32).subtract(BigInteger.ONE);
 	

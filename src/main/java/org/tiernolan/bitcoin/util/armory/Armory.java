@@ -29,7 +29,6 @@ public class Armory {
 	private static KeyPair getNextPublicKey(KeyPair pair) {
 		byte[] chaincode = pair.getAttach("chaincode");
 		if (chaincode == null) {
-			System.out.println("Chaincode is null");
 			return null;
 		}
 		BigInteger step = getStep(pair.getPublicKey(), chaincode);

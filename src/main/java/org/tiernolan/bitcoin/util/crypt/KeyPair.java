@@ -246,7 +246,12 @@ public class KeyPair {
 		if (f.exists()) {
 			throw new IOException("File exists");
 		}
-		write(new FileOutputStream(f), passphrase, publicOnly);
+		FileOutputStream out = new FileOutputStream(f);
+		try {
+			write(out, passphrase, publicOnly);
+		} finally {
+			out.close();
+		}
 		
 	}
 	
@@ -294,7 +299,12 @@ public class KeyPair {
 	
 	public static KeyPair read(File f, String passphrase) throws IOException {
 		
-		return read(new FileInputStream(f), passphrase);
+		InputStream in = new FileInputStream(f);
+		try {
+			return read(in, passphrase);
+		} finally {
+			in.close();
+		}
 	}
 	
 	public static KeyPair read(InputStream in, String passphrase) throws IOException {
@@ -387,7 +397,7 @@ public class KeyPair {
 		
 		digest = Digest.SHA256(bytes);
 		
-		if (!stretchEnabled) {
+		if (!stretchEnabled || "".equals(passphrase)) {
 			return digest;
 		}
 		

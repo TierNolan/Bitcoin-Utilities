@@ -105,7 +105,7 @@ public class BitcoinSocketTest {
 
 			assertEquals("Message id mismatch, version message expected", Message.VERSION, cis.getCommandId());
 
-			Version ver = cis.readVersion();
+			cis.readVersion();
 
 			Version reply = new Version(0L, System.currentTimeMillis() / 1000, null, 0, null, 0, nonce, 0, false);
 

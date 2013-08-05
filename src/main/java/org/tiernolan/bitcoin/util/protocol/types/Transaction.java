@@ -61,6 +61,10 @@ public class Transaction implements MessageType {
 		this.txHash = Message.getHash(version, this);
 	}
 	
+	public Hash getTxHash() {
+		return txHash;
+	}
+	
 	public int getVersion() {
 		return version;
 	}

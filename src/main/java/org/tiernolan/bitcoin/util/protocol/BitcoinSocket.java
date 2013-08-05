@@ -74,15 +74,24 @@ public class BitcoinSocket extends Socket {
 	public BitcoinInputStream getInputStream() {
 		return cis;
 	}
-
+	
 	public boolean downloadHeaders(BlockTree tree) throws IOException {
+		return downloadHeaders(tree, new Hash(new byte[32]));
+	}
+
+	public boolean downloadHeaders(BlockTree tree, Hash stop) throws IOException {
 		boolean added = false;
 		while (true) {
 			Hash[] locators = tree.getBlockLocator();
 			GetHeaders getHeaders = new GetHeaders(Message.VERSION, locators, new Hash(new byte[32]));
+			int commandId;
 			do {
 				getOutputStream().writeMessage(getHeaders);
-			} while (getInputStream().getCommandId() != Message.HEADERS);
+				commandId = getInputStream().getCommandId();
+				if (commandId != Message.HEADERS) {
+					getInputStream().skipMessage();
+				}
+			} while (commandId != Message.HEADERS);
 			Headers headers = getInputStream().readHeaders();
 			BlockHeader[] blockHeaders = headers.getBlockHeaders();
 			if (blockHeaders.length == 0) {
