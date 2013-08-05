@@ -14,6 +14,12 @@ public class Armory {
 	private final static char[] encodeTable = "asdfghjkwertuion".toCharArray();
 	private final static int[] reverseTable = computeReverseTable();
 	
+	public static KeyPair addRandomChaincode(KeyPair pair) {
+		byte[] chaincode = new byte[32];
+		KeyPair.getSeededSecureRandom().nextBytes(chaincode);
+		return pair.attach("chaincode", chaincode);
+	}
+	
 	public static KeyPair getNext(KeyPair pair) {
 		if (pair == null) {
 			System.out.println("Pair is null");
@@ -33,8 +39,7 @@ public class Armory {
 		}
 		BigInteger step = getStep(pair.getPublicKey(), chaincode);
 		KeyPair newPair = pair.getNewKeyPair(pair.getPublicKey().multiply(step));
-		newPair.attach("chaincode", chaincode);
-		return newPair;
+		return newPair.attach("chaincode", chaincode);
 	}
 	
 	private static KeyPair getNextPrivateKey(KeyPair pair) {
@@ -45,8 +50,7 @@ public class Armory {
 		ECPoint pubKey = pair.getPublicKey();
 		BigInteger step = getStep(pubKey, chaincode);
 		KeyPair newPair = pair.getNewKeyPair(pair.getPrivateKey().multiply(step).mod(Secp256k1.getN()));
-		newPair.attach("chaincode", chaincode);
-		return newPair;
+		return newPair.attach("chaincode", chaincode);
 	}
 	
 	private static BigInteger getStep(ECPoint pub, byte[] chaincode) {
