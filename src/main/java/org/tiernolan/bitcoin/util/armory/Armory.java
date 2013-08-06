@@ -6,6 +6,7 @@ import org.bouncycastle.math.ec.ECPoint;
 import org.bouncycastle.pqc.math.linearalgebra.ByteUtils;
 import org.tiernolan.bitcoin.util.crypt.Digest;
 import org.tiernolan.bitcoin.util.crypt.KeyPair;
+import org.tiernolan.bitcoin.util.crypt.NetPrefix;
 import org.tiernolan.bitcoin.util.crypt.Secp256k1;
 import org.tiernolan.bitcoin.util.encoding.Base58;
 
@@ -18,6 +19,32 @@ public class Armory {
 		byte[] chaincode = new byte[32];
 		KeyPair.getSeededSecureRandom().nextBytes(chaincode);
 		return pair.attach("chaincode", chaincode);
+	}
+	
+	public static KeyPair getKeyPairFromPaper(NetPrefix prefix, String root1, String root2, String chain1, String chain2) {
+		byte[] decodedRoot1 = Armory.decodeLine(root1.replace(" ", ""), 0);
+		byte[] decodedRoot2 = Armory.decodeLine(root2.replace(" ", ""), 0);			
+		byte[] decodedChain1 = Armory.decodeLine(chain1.replace(" ", ""), 0);
+		byte[] decodedChain2 = Armory.decodeLine(chain2.replace(" ", ""), 0);
+		
+		if (decodedRoot1 == null || decodedRoot2 == null || decodedChain1 == null || decodedChain2 == null) {
+			System.out.println(decodedRoot1 + " " + decodedRoot2 + " " + decodedChain1 + " " + decodedChain2);
+			return null;
+		}
+		
+		byte[] key = ByteUtils.concatenate(new byte[] {0}, ByteUtils.concatenate(decodedRoot1, decodedRoot2));
+		if (key.length != 33) {
+			return null;
+		}
+		
+		byte[] chaincode = ByteUtils.concatenate(decodedChain1, decodedChain2);
+		
+		BigInteger privateKey = new BigInteger(key);
+		
+		KeyPair keyPair = new KeyPair(prefix, privateKey);
+		keyPair.attach("chaincode", chaincode);
+		
+		return keyPair;
 	}
 	
 	public static KeyPair getNext(KeyPair pair) {
@@ -63,7 +90,7 @@ public class Armory {
 	}
 	
 	public static String getWalletId(KeyPair root) {
-		KeyPair first = Armory.getNextPrivateKey(root);
+		KeyPair first = Armory.getNextPublicKey(root);
 		if (first == null) {
 			return null;
 		}
@@ -79,6 +106,23 @@ public class Armory {
 		}
 		
 		return Base58.encode(clipped);
+	}
+	
+	public static int checkLine(String line) {
+		for (int i = 0; i <= 2; i++) {
+			if (decodeLine(line, i) != null) {
+				return i;
+			}
+		}
+		return -1;
+	}
+	
+	public static String correctLine(String line) {
+		byte[] decoded = decodeLine(line, 2);
+		if (decoded == null) {
+			return null;
+		}
+		return encodeLine(decoded);
 	}
 	
 	public static byte[] decodeLine(String line) {
@@ -97,13 +141,14 @@ public class Armory {
 	}
 	
 	public static byte[] decodeLine(String line, int errors) {
+		line = line.replace(" ", "");
 		char[] chars = line.toCharArray();
 		byte[] result = decodeLine(chars);
 		if (result != null) {
 			return result;
 		}
 		char[] temp = line.toCharArray();
-		System.out.println("Start " + new String(temp));
+
 		int[] i = new int[errors];
 		do {
 			int[] j = new int[errors];
@@ -113,7 +158,6 @@ public class Armory {
 				}
 				result = decodeLine(temp);
 				if (result != null) {
-					System.out.println("Using " + new String(temp));
 					return result;
 				}
 			} while (incLoop(j, encodeTable.length));
@@ -162,6 +206,15 @@ public class Armory {
 		
 	}
 	
+	public static String encodeLine(byte[] decoded) {
+		byte[] digest = Digest.doubleSHA256(decoded);
+		byte[] crc = new byte[2];
+		
+		System.arraycopy(digest, 0, crc, 0, 2);
+		
+		return toEasyHex(ByteUtils.concatenate(decoded, crc));
+	}
+	
 	public static boolean checkEqual(byte[] a, byte[] b, int length) {
 		if (a == null || b == null || a.length < length || b.length < length) {
 			return false;
@@ -172,6 +225,22 @@ public class Armory {
 			}
 		}
 		return true;
+	}
+	
+	public static String toEasyHex(byte[] decoded) {
+		return toEasyHex(decoded, 2);
+	}
+	
+	public static String toEasyHex(byte[] decoded, int step) {
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < decoded.length; i++) {
+			sb.append(getValueSymbol((decoded[i] >> 4) & 0xF));
+			sb.append(getValueSymbol(decoded[i] & 0xF));
+			if (i % step == step - 1) {
+				sb.append(" ");
+			}
+		}
+		return sb.toString();
 	}
 	
 	public static byte[] fromEasyHex(char[] encoded) {
