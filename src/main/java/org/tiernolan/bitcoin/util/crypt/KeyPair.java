@@ -378,7 +378,7 @@ public class KeyPair {
 			if (priPrefix == -1 || pubPrefix == -1) {
 				throw new IOException("Unable to decode network prefix");
 			}
-			return new NetPrefix((byte) priPrefix, (byte) pubPrefix);
+			return new NetPrefix((byte) pubPrefix, (byte) priPrefix);
 		} else {
 			throw new IOException("Unable to decode network prefix");
 		}

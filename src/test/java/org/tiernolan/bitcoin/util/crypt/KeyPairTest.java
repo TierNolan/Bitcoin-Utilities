@@ -12,6 +12,7 @@ import java.util.Random;
 
 import org.bouncycastle.math.ec.ECPoint;
 import org.junit.Test;
+import org.tiernolan.bitcoin.util.armory.Armory;
 import org.tiernolan.bitcoin.util.encoding.Base58;
 import org.tiernolan.bitcoin.util.encoding.ByteArray;
 
@@ -144,6 +145,24 @@ public class KeyPairTest {
 		assertTrue("Buffer does not match expected", Arrays.equals(new byte[] {0, 0, 1, 2, 3, 4, 5}, ByteArray.rightJustify(ref, 7)));
 		assertTrue("Buffer does not match expected", Arrays.equals(new byte[] {1, 2, 3, 4, 5}, ByteArray.rightJustify(ref, 5)));
 		
+	}
+	
+	@Test
+	public void testWriteRead() throws IOException {
+		
+		KeyPair pair = Armory.addRandomChaincode(new KeyPair(NetPrefix.MAIN_NET));
+		
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		pair.write(out, "");
+		
+		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
+		KeyPair pair2 = KeyPair.read(in, "");
+		
+		assertEquals("Private key mismatch after write/read", pair.getPrivateKey(), pair2.getPrivateKey());
+		assertEquals("Public address mismatch", pair.getAddress(false), pair2.getAddress(false));
+		assertEquals("Public prefix mismatch", pair.getPublicPrefix(), pair2.getPublicPrefix());
+		assertEquals("Private prefix mismatch", pair.getPrivatePrefix(), pair2.getPrivatePrefix());
+		assertTrue("Chaincode mismatch", Arrays.equals(pair.getAttach("chaincode"), pair2.getAttach("chaincode")));
 	}
 
 }
