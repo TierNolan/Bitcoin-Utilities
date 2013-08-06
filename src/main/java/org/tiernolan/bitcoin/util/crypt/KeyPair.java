@@ -4,6 +4,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.EOFException;
 import java.io.File;
+import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -250,6 +251,8 @@ public class KeyPair {
 		try {
 			write(out, passphrase, publicOnly);
 		} finally {
+			out.flush();
+			out.getFD().sync();
 			out.close();
 		}
 		
@@ -290,11 +293,6 @@ public class KeyPair {
 			dos.writeBoolean(false);
 		}
 		dos.flush();
-		out.flush();
-		if (out instanceof FileOutputStream) {
-			((FileOutputStream) out).getFD().sync();
-		}
-		dos.close();
 	}
 	
 	public static KeyPair read(File f, String passphrase) throws IOException {
