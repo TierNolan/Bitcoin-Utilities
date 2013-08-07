@@ -3,17 +3,21 @@ package org.tiernolan.bitcoin.util.armory;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.math.BigInteger;
+import java.util.Arrays;
 import java.util.LinkedList;
 
 import org.bouncycastle.math.ec.ECPoint;
 import org.bouncycastle.pqc.math.linearalgebra.ByteUtils;
 import org.junit.Test;
-import org.tiernolan.bitcoin.util.armory.Armory;
 import org.tiernolan.bitcoin.util.crypt.Crypt;
 import org.tiernolan.bitcoin.util.crypt.KeyPair;
 import org.tiernolan.bitcoin.util.crypt.NetPrefix;
 import org.tiernolan.bitcoin.util.crypt.Secp256k1;
+import org.tiernolan.bitcoin.util.encoding.ByteArray;
 
 
 public class ArmoryTest {
@@ -101,6 +105,11 @@ public class ArmoryTest {
 				assertTrue("Private key should be present in KeyPair", keyPair.getPrivateKey() != null);
 				keyPair = nextKeyPair;
 			}
+			
+			root.wipePrivateKey();
+			
+			assertEquals("Wallet id mismatch", walletIds[i], Armory.getWalletId(root));
+			
 		}
 	}
 	

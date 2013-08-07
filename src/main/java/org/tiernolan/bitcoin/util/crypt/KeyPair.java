@@ -148,6 +148,10 @@ public class KeyPair {
 		}
 	}
 	
+	public NetPrefix getPrefix() {
+		return prefix;
+	}
+	
 	public int getPublicPrefix() {
 		if (prefix == null) {
 			return -1;

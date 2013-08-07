@@ -81,7 +81,7 @@ public class Armory {
 	}
 	
 	private static BigInteger getStep(ECPoint pub, byte[] chaincode) {
-		byte[] extend = Digest.doubleSHA256(pub.getEncoded());
+		byte[] extend = Digest.doubleSHA256(pub.getEncoded(false));
 		for (int i = 0; i < extend.length; i++) {
 			extend[i] = (byte) (extend[i] ^ chaincode[i]);
 		}

@@ -82,13 +82,16 @@ public class BitcoinSocket extends Socket {
 	public boolean downloadHeaders(BlockTree tree, Hash stop) throws IOException {
 		boolean added = false;
 		while (true) {
+			System.out.println("Height " + tree.getHeight());
 			Hash[] locators = tree.getBlockLocator();
 			GetHeaders getHeaders = new GetHeaders(Message.VERSION, locators, new Hash(new byte[32]));
 			int commandId;
 			do {
+				System.out.println("Sending getHeaders " + getHeaders.getLocators()[0]);
 				getOutputStream().writeMessage(getHeaders);
 				commandId = getInputStream().getCommandId();
 				if (commandId != Message.HEADERS) {
+					System.out.println("<<<< Skipping " + getInputStream().getCommand() + " >>>>");
 					getInputStream().skipMessage();
 				}
 			} while (commandId != Message.HEADERS);
